@@ -118,7 +118,6 @@ class SimplicialComplex:
         self.graph_distance_metric = graph_distance_metric
         self.weight_distance_metric = weight_distance_metric
         self.complex = nx.Graph()
-        self.node_shape = None
 
         #define euclidean distance
         def euclidean(x,y):
@@ -141,14 +140,7 @@ class SimplicialComplex:
             self.add_point(p)
 
     def add_point(self, point):
-        assert isinstance(point, np.ndarray),\
-            f'Data added to simplex must be numpy array, got {type(point)} instead'
-        assert self.node_shape is None or self.node_shape == point.shape,\
-            f'New point must be of the same shape as data already in simplex. '\
-            f'Expected {self.node_shape}, got {point.shape}'
-        #set shape of simplex data if this is the first point added to simplex
-        if self.node_shape is None:
-            self.node_shape = point.shape
+        assert isinstance(point, np.ndarray), 'Point parameter must be numpy array'
         # convert point to hashable tuple
         point_id = tuple(point)
         # do nothing if point already exists in complex
@@ -157,17 +149,16 @@ class SimplicialComplex:
         self.complex.add_node(point_id)
         distance_vector = self.get_distance_vector(point)
         for graph_distance, weight_distance, node in distance_vector:
-            if graph_distance <= self.radius and graph_distance != 0:
+            if graph_distance <= 2*self.radius and graph_distance != 0:
                 # convert neighbor to hashable tuple
                 neighbor_id = tuple(node)
-                self.complex.add_edge(point_id,
-                                      neighbor_id,
-                                      weight=weight_distance)
+                print(point_id, neighbor_id, weight_distance)
+                self.complex.add_edge(point_id, neighbor_id, weight_distance)
 
     def remove_point(self, point):
         point_id = tuple(point)
         assert self.complex.has_node(point_id), 'Cannot remove point not already in simplex'
-        self.complex.remove_node(point_id)
+        self.complex.remove_node(point)
 
     def get_distance_vector(self, point):
         '''
@@ -196,19 +187,19 @@ class SimplicialComplex:
         else:
             return np.array(vertices)
 
-    #def get_simplex(self, point, dim=1):
-        #if type(point) != tuple:
-            #point = tuple(point)
-        #if not self.complex.has_node(point):
-            #return None
-        #neighbors = self.complex.neighbors(point)
-        #candidate_simplicies = combinations(neighbors, dim)
-        ##TODO Finish functino definintion after defining simplex class
-        #pass
-#
-    #def is_fully_connected(self, nodes):
-        #edges = combinations(nodes,2)
-        #for edge in edges:
-            #if not self.complex.has_edge(*edge):
-                #return False
-       #return True
+    def get_simplex(self, point, dim=1):
+        if type(point) != tuple:
+            point = tuple(point)
+        if not self.complex.has_node(point):
+            return None
+        neighbors = self.complex.neighbors(point)
+        candidate_simplicies = combinations(neighbors, dim)
+        #TODO Finish functino definintion after defining simplex class
+        pass
+
+    def is_fully_connected(self, nodes):
+        edges = combinations(nodes,2)
+        for edge in edges:
+            if not self.complex.has_edge(*edge):
+                return False
+        return True
