@@ -85,8 +85,12 @@ class SimplicialComplex:
 
     def remove_point(self, point):
         point_id = tuple(point)
-        assert self.complex.has_node(point_id), 'Cannot remove point not already in simplex'
-        self.complex.remove_node(point_id)
+        if self.complex.has_node(point_id):
+            self.complex.remove_node(point_id)
+
+    def has_point(self, point):
+        point_id = tuple(point)
+        return self.complex.has_node(point_id)
 
     def get_distance_vector(self, point):
         '''
@@ -114,21 +118,3 @@ class SimplicialComplex:
                 return np.loadtxt(f, delimiter=delim)
         else:
             return np.array(vertices)
-
-
-    #def get_simplex(self, point, dim=1):
-        #if type(point) != tuple:
-            #point = tuple(point)
-        #if not self.complex.has_node(point):
-            #return None
-        #neighbors = self.complex.neighbors(point)
-        #candidate_simplicies = combinations(neighbors, dim)
-        ##TODO Finish functino definintion after defining simplex class
-        #pass
-#
-    #def is_fully_connected(self, nodes):
-        #edges = combinations(nodes,2)
-        #for edge in edges:
-            #if not self.complex.has_edge(*edge):
-                #return False
-       #return True

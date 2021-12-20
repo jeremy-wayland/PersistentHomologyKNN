@@ -37,7 +37,7 @@ class PHKnn:
             f', got {type(X)}'
         assert self.sc is not None, 'Attempting to predict before fitting to training data'
         if len(X.shape) == 1:
-            X.reshape(1, X.shape[0])
+            X = X.reshape(1, X.shape[0])
         predictions = []
         #carry out knn algorithm for each query in matrix
         for x in X:
@@ -81,8 +81,9 @@ class PHKnn:
         all_labels = nx.get_node_attributes(self.sc.complex, 'label')
         neighbor_labels = []
         for n in nodes:
-            label = all_labels[n]
-            neighbor_labels.append(label)
+            if n in all_labels:
+                label = all_labels[n]
+                neighbor_labels.append(label)
         return neighbor_labels
 
     def majority_vote(self, neighbors):
@@ -90,7 +91,7 @@ class PHKnn:
         if labels is None:
             return None
         vote_count = Counter(labels)
-        winning_vote = vote_count.most_common(1)[0]
+        winning_vote = vote_count.most_common(1)[0][0]
         return winning_vote
 
 
