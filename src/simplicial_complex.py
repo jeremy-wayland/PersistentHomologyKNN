@@ -5,86 +5,6 @@ import warnings
 from itertools import combinations
 
 
-class Simplex:
-    def __init__(self,
-    points=None,
-    graph=None,
-    distance_metric=None,
-    simplex=None):
-        self.graph = graph
-        self.distance_metric = distance_metric
-        self.dimension = 0
-        self.magnitude = 0
-        self.perimeter = 0
-        if simplex is not None:
-            self.copy_simplex(simplex)
-        if distance_metric is None:
-            def euclidean(x, y):
-                return np.linalg.norm(x-y)
-            self.distance_metric = euclidean
-        self.add_points(points)
-        self.update_dimensions()
-
-    def copy_simplex(simplex):
-        self.graph = nx.copy(simplex.graph)
-        self.distance_metric = simplex.distance_metric
-        self.dimension = simplex.dimension
-        self.magnitude = simplex.magnitude
-        self.perimeter = simplex.perimeter
-
-    def add_points(self, points):
-        if points is not None:
-            self.graph.add_nodes(points)
-        self.fully_connect()
-
-    def compose_simplices(self, simplex):
-        assert type(simplex) in [simplicial_complex.Simplex, nx.Graph],\
-        'simplex parameter must be another simplex or a complete weighted \
-        undirected graph from Networkx'
-        if type(simplex)==simplicial_complex.Simplex:
-            graph = simplex.graph
-        #ensure no edges are repeated in new graph
-        for edge in graph.edges:
-            if self.graph.has_edge(*edge):
-                graph.remove_edge(*edge)
-        #build composition of both simplicies
-        new_graph = nx.compose(graph, self.graph)
-        new_simplex = Simplex(graph=new_graph,
-                              distance_metric=self.distance_metric)
-        return new_simplex
-
-    def absorb_simplex(self, simplex):
-        new_simplex = self.compose_simplices(simplex)
-        self.copy_simplex(new_simplex)
-
-    def update_dimensions(self):
-        edges = dict(self.graph.edges)
-        magnitude=1
-        perimiter=0
-        for edge in edges:
-            weight = edges[edge][weight]
-            magnitude*=weight
-            perimeter+=weight
-        self.magnitude = magnitude
-        self.perimeter = perimeter
-        self.dimension = len(self.graph.nodes)
-
-    def fully_connect(self):
-        nodes = list(self.graph.nodes)
-        edges = combinations(nodes,2)
-        graph_updated = False
-        for edge in edges:
-            if not self.graph.has_edge(*edge):
-                graph_updated = True
-                weight = self.distance_metric(*edge)
-                self.graph.add_edge(*edge)
-        if graph_updated:
-            update_dimensions()
-
-
-
-
-
 class SimplicialComplex:
     """
     This class generates a simplicial complex for a given set of data
@@ -131,7 +51,7 @@ class SimplicialComplex:
             self.weight_distance_metric = euclidean
         #build simplicial complex if vertices are provided
         if vertices is not None:
-            complex = self.build_complex(vertices, delim)
+            self.build_complex(vertices, delim)
 
     def build_complex(self, vertices, delim=None):
         #import set of points from file, np array or pandas dataframe

@@ -21,8 +21,7 @@ plt.show()
 print('PASSED')
 
 # Test point insertion
-print('Testi:w
-ng regular point insertion')
+print('Testing regular point insertion')
 sc.add_point(np.array((-1,1,1,1)))
 print('PASSED')
 
