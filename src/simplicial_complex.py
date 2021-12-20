@@ -141,8 +141,7 @@ class SimplicialComplex:
             self.add_point(p)
 
     def add_point(self, point):
-        assert isinstance(point, np.ndarray),\
-            f'Data added to simplex must be numpy array, got {type(point)} instead'
+        point = np.array(point)
         assert self.node_shape is None or self.node_shape == point.shape,\
             f'New point must be of the same shape as data already in simplex. '\
             f'Expected {self.node_shape}, got {point.shape}'
@@ -195,6 +194,7 @@ class SimplicialComplex:
                 return np.loadtxt(f, delimiter=delim)
         else:
             return np.array(vertices)
+
 
     #def get_simplex(self, point, dim=1):
         #if type(point) != tuple:

@@ -7,20 +7,30 @@ from simplicial_complex import SimplicialComplex
 
 # Test construction of simplicial complex
 print('Testing construtor using torus data')
-sc = SimplicialComplex(.17, vertices='../Data/torus_points.txt')
+sc = SimplicialComplex(.5, vertices='../Data/torus_points.txt')
+nx.draw(sc.complex)
+plt.show()
+print('PASSED')
+
+print('Testing contructor using tours np array')
+with open('../Data/torus_points.txt') as f:
+    torus_data = np.loadtxt(f, delimiter=',')
+sc = SimplicialComplex(.5, vertices=torus_data)
+nx.draw(sc.complex)
+plt.show()
 print('PASSED')
 
 # Test point insertion
-print('Testing regular point insertion')
+print('Testi:w
+ng regular point insertion')
 sc.add_point(np.array((-1,1,1,1)))
 print('PASSED')
 
-print('Testing point insertion with incorrect type')
-try:
-    sc.add_point([-1,1,1,1])
-except AssertionError as err:
-    print(err)
-    print('PASSED')
+
+
+print('Testing point insertion with different type')
+sc.add_point([-1,1,1,1])
+print('PASSED')
 
 print('Testing point insertion with incorrect dimension')
 try:
