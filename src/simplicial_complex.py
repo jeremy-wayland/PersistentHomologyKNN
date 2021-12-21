@@ -82,7 +82,7 @@ class SimplicialComplex:
                 self.complex.add_edge(point_id,
                                       neighbor_id,
                                       weight=weight_distance)
-
+                
     def remove_point(self, point):
         point_id = tuple(point)
         if self.complex.has_node(point_id):
@@ -118,3 +118,4 @@ class SimplicialComplex:
                 return np.loadtxt(f, delimiter=delim)
         else:
             return np.array(vertices)
+
