@@ -2,6 +2,7 @@
 # Author: Jeremy Wayland
 
 import numpy as np
+import matplotlib.pyplot as plt
 from ripser import ripser
 from persim import plot_diagrams
 
@@ -28,7 +29,8 @@ def feature_selection(data,max_dim,min_persistence,delim=','):
 
     #Generate Persistence Diagram for Point Cloud and Visualize
     dgms = ripser(data,maxdim=max_dim)['dgms']
-    plot_diagrams(dgms, show=True)
+    plt.axes()   
+    plot_diagrams(dgms, show=True,title='Persistence Diagram',size=10)
 
     
     #Convert to array
@@ -39,7 +41,7 @@ def feature_selection(data,max_dim,min_persistence,delim=','):
         barcode = barcodes[dim]
         persistent_features = []
 
-        if len(features)>0:
+        if len(barcode)>0:
             for interval in barcode:
                 persistence = abs(interval[1] - interval[0]) #Death of feature - Birth of Feature
                 #Save features that persist longer than min_persistence
@@ -97,12 +99,14 @@ def candidate_intervals(filtered_pd:dict):
     #Just for dim 2 since we are only concerned with cycles
     dim = max(filtered_pd.keys())
     #Get Max Nontrivial Dimension Recursively
-    if len(filtered_pd[dim]) ==0 : #Trivial Barcode
+    if len(filtered_pd[dim]) == 0 : #Trivial Barcode
         filtered_pd.pop(dim)
         if len(filtered_pd) == 0:
-            print('No candidate intervals found. Try increasing minimum persistence threshold')
+            print('No candidate intervals found. Try decreasing minimum persistence threshold!')
             return None
         return candidate_intervals(filtered_pd)
+    
+
   
     cap,flag = interval_intersection(filtered_pd[dim])
     #Have dimensions collapsed?
@@ -146,6 +150,4 @@ def select_radii(data,max_dim,min_persistence):
     if candidates is None:
         return None
     
-    return [np.mean(x) for x in candidates]
-    #Take the median of each candidate interval
-    
+    return max([np.mean(x) for x in candidates]) #Take the median of each candidate interval
