@@ -1,9 +1,5 @@
-# A python wrapper for Ripser
-
-# Automate ripser call 
-# seperate bar codes by dimension
-# Choose feature tuples above some persistence threshold
-# Start with highest dimension and iteratively intersect with lower dimensions
+# Using Ripser.py to extract radii that can generate Vietoris Rips Complexes with desirable topological features
+# Author: Jeremy Wayland
 
 import numpy as np
 from ripser import ripser
@@ -13,15 +9,17 @@ from persim import plot_diagrams
 
 def feature_selection(data,max_dim,min_persistence,delim=','):
     """This function will compute the persistence barcode of a point cloud using Ripser, and plot the diagram.
+    Uses scikit-tda's ripser.py: a lean persistent homology package for Python.
+    It will then filter for features that persist longer than a desired threshold.
 
-This function uses scikit-tda's ripser.py: a lean persistent homology package for Python.
+    Inputs:
+        data: txt file or numpy array
+        max_dim: specifies the maximum dimension of homology to be computed
+        min_persistence: threshold value for how long you want ~important~ features to persist for
 
-Note:
-    max_dim: specifies the maximum dimension of homology to be computed
-    data: txt file or numpy array
-    
-     This will be done by selecting the betti numbers that persist longer than the threshold
-        Then radii can be selected that preserve homology for each successive dimension. 
+    Returns:
+        features: a dictonary of lifetimes of features seperated by by dimension
+     
     """
 
     if type(data)==str:
@@ -33,7 +31,7 @@ Note:
     plot_diagrams(dgms, show=True)
 
     
-    #Convert to Numpy
+    #Convert to array
     barcodes = np.array(dgms,dtype=object)
     features = dict()
 
@@ -54,55 +52,63 @@ Note:
         
     return features
             
-def interval_intersection(array:list,flag=False):
-    if len(array) == 1:
-        return array[0],flag
+def interval_intersection(lst:list,flag=False):
+    """A recursive function for sorting a list of intervals and evaluating the self intersetion $\bigCap$.
+    Inputs:
+        lst: a list of nested tuples (persistence intervals)
+        flag: a paramater defaulting to False that tracks whether any intersection has occurred
+
+    Returns:
+        An interval equal to the self intersection of the original list.
+        If no intersection occurs, this will return the interval with the largest lowerbound.
+
+    """
+    if len(lst) == 1:
+        return lst[0],flag
     else:
         #Sort by lower bound
-        array.sort(key=lambda x:x[0])
+        lst.sort(key=lambda x:x[0])
         
-        A = array[0]
-        B = array[1]
+        A = lst[0]
+        B = lst[1]
        
         #Check for intersection?
         if min(B) <= max(A):
-            array[1] = np.array([min(B),min(max(A),max(B))]) 
-            print(f'Intersection, new interval: {array[1]}')
+            lst[1] = np.array([min(B),min(max(A),max(B))]) 
             flag=True
         else:
-            print('No intersection')
             if flag:
                 #If there has been previous intersection then have this interval propapgate
-                array[1] = A
+                lst[1] = A
         #Recursive Call
-        return interval_intersection(array[1:],flag)
+        return interval_intersection(lst[1:],flag)
         
 
 def candidate_intervals(filtered_pd:dict):
+    """ This function recursively evaluates intervals that are candidates for preserving desired topological features that are identified by a persistence diagram.
+    
+    Inputs:
+        filtered_pd: a filtered persistence diagram, encoded as a dictionay that seperates persistence lifetime by dimension.
+            - designed to take a dictionary outputted by the feature_selection function.
+    
+    Returns
+        list of candidate intervals that retain homology structure when converted to a VR complex. 
+    """
     #Just for dim 2 since we are only concerned with cycles
     dim = max(filtered_pd.keys())
-    print(dim)
     #Get Max Nontrivial Dimension Recursively
     if len(filtered_pd[dim]) ==0 : #Trivial Barcode
         filtered_pd.pop(dim)
-        print(f'Trimmed dictionary: {filtered_pd}')
         if len(filtered_pd) == 0:
             print('No candidate intervals found. Try increasing minimum persistence threshold')
             return None
         return candidate_intervals(filtered_pd)
-
-    #make sure intervals are sorted  
-    print(f'Im printing my persistence dictionary: {filtered_pd}')
-
+  
     cap,flag = interval_intersection(filtered_pd[dim])
-    print(f"The intersection is: {cap}")
     #Have dimensions collapsed?
     if dim == 1:
-        print('Dimension is 1')
         #Is there nontrivial intersection
-        print(filtered_pd[dim][-1])
         if flag:
-            print('About to return, should not recurse farther')
             return cap
             #returns list of all non-trivial homology intervals
             
@@ -111,7 +117,6 @@ def candidate_intervals(filtered_pd:dict):
 
     #dim 2 or greater
     if flag:
-        print('No intersection confirmed, should procceed to next dimension')
         #Proceed element wise down to next dimension
             #Add all intervals to lower dimension
         for interval in filtered_pd[dim]:
@@ -120,16 +125,27 @@ def candidate_intervals(filtered_pd:dict):
         filtered_pd[dim-1].append(cap)
     #Remove current dimension and proceed to next, recursively
     filtered_pd.pop(dim)
-    print(f'Trimmed pd: {filtered_pd}')
 
     return candidate_intervals(filtered_pd)
 
 
 
 def select_radii(data,max_dim,min_persistence):
-    
+    """"" This function extracts radii that can generate Vietoris Rips Complexes with desirable topological features.
+
+    Inputs:
+        data: txt file or numpy array
+        max_dim: specifies the maximum dimension of homology to be computed
+        min_persistence: threshold value for how long you want ~important~ features to persist for
+
+    Returns:
+        a list of token radii.
+    """
     features = feature_selection(data,max_dim,min_persistence)
     candidates = candidate_intervals(features)
+    if candidates is None:
+        return None
     
-    #Take the median of each candidate interval
     return [np.mean(x) for x in candidates]
+    #Take the median of each candidate interval
+    
