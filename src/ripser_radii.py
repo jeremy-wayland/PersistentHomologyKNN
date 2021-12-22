@@ -1,4 +1,17 @@
-def feature_selection(data,max_dim,min_persistence):
+# A python wrapper for Ripser
+
+# Automate ripser call 
+# seperate bar codes by dimension
+# Choose feature tuples above some persistence threshold
+# Start with highest dimension and iteratively intersect with lower dimensions
+
+import numpy as np
+from ripser import ripser
+from persim import plot_diagrams
+
+
+
+def feature_selection(data,max_dim,min_persistence,delim=','):
     """This function will compute the persistence barcode of a point cloud using Ripser, and plot the diagram.
 
 This function uses scikit-tda's ripser.py: a lean persistent homology package for Python.
@@ -10,6 +23,7 @@ Note:
      This will be done by selecting the betti numbers that persist longer than the threshold
         Then radii can be selected that preserve homology for each successive dimension. 
     """
+
     if type(data)==str:
         with open(data) as f:
             data = np.loadtxt(f, delimiter=delim)
@@ -39,8 +53,6 @@ Note:
         features[dim] = persistent_features
         
     return features
-            
-
             
 def interval_intersection(array:list,flag=False):
     if len(array) == 1:
