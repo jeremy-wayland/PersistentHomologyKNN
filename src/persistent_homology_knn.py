@@ -11,7 +11,7 @@ class PHKnn:
                  k,
                  graph_distance_metric=None,
                  weight_distance_metric=None):
-        self.radius = 2*radius
+        self.radius = radius
         self.k = k
         self.graph_distance_metric = graph_distance_metric
         self.weight_distance_metric = weight_distance_metric

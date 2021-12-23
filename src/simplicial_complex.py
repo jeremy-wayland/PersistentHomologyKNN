@@ -31,7 +31,7 @@ class SimplicialComplex:
                 vertices=None,
                 delim=','):
         ####CLASS INSTANCE VARIABLES
-        self.radius = 2*radius
+        self.radius = radius
         self.graph_distance_metric = graph_distance_metric
         self.weight_distance_metric = weight_distance_metric
         self.complex = nx.Graph()
